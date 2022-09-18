@@ -41,13 +41,13 @@ class Slider {
 
         // 옵션이 없으면 기본값 설정해주기
         this.option = option;
-        if(!this.option.direction) {
+        if (!this.option.direction) {
             this.option.direction = 'row';
         }
-        if(!this.option.animation) {
+        if (!this.option.animation) {
             this.option.animation = {}
         }
-        if(!this.option.animation.millisecond) {
+        if (!this.option.animation.millisecond) {
             this.option.animation.millisecond = 400;
         }
 
@@ -150,12 +150,11 @@ class Slider {
         // 슬라이크 전체 길이 구하기
         this.offsetAttribute = 'left';
         this.sliderDistance = this.sliderElement.clientWidth;
-        if(this.option.direction !== 'horizontal' && this.option.direction === 'vertical' ||
+        if (this.option.direction !== 'horizontal' && this.option.direction === 'vertical' ||
             this.option.direction !== 'row' && this.option.direction === 'column') {
             this.offsetAttribute = 'top';
             this.sliderDistance = this.sliderElement.clientHeight;
         }
-        console.log(this.sliderDistance);
 
         // 현재 슬라이드 위치가 슬라이드 개수를 넘기지 않게 하기 위한 변수
         this.maxSlide = this.slideItems.length;
@@ -341,8 +340,7 @@ class Slider {
             this.offset = this.sliderDistance * this.currSlide;
             // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
             this.changedOffset();
-        }
-        else {
+        } else {
             // 무한 슬라이드 기능 - currSlide 값만 변경해줘도 되지만 시각적으로 자연스럽게 하기 위해 아래 코드 작성
             this.currSlide = 0;
             this.offset = this.sliderDistance * this.currSlide;
@@ -351,7 +349,7 @@ class Slider {
             this.currSlide++;
             this.offset = this.sliderDistance * this.currSlide;
             // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
-            setTimeout(this.changedOffset, 0);
+            this.timeoutID = setTimeout(this.changedOffset, 0);
         }
 
         // 슬라이드 이동 시 현재 활성화된 pagination 변경
@@ -368,8 +366,7 @@ class Slider {
             this.offset = this.sliderDistance * this.currSlide;
             // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
             this.changedOffset();
-        }
-        else {
+        } else {
             // 무한 슬라이드 기능 - currSlide 값만 변경해줘도 되지만 시각적으로 자연스럽게 하기 위해 아래 코드 작성
             this.currSlide = this.maxSlide + 1;
             this.offset = this.sliderDistance * this.currSlide;
@@ -378,7 +375,7 @@ class Slider {
 
             this.currSlide--;
             this.offset = this.sliderDistance * this.currSlide;
-            setTimeout(this.changedOffset, 0);
+            this.timeoutID = setTimeout(this.changedOffset, 0);
         }
 
         // 슬라이드 이동 시 현재 활성화된 pagination 변경
@@ -390,6 +387,7 @@ class Slider {
 
     onAnimatedStopMove = (event) => {
         clearInterval(this.loopInterval);
+        this.loopInterval = undefined;
     }
 
     onAnimatedStartMove = (event) => {
@@ -399,6 +397,10 @@ class Slider {
     }
 
     changedOffset = () => {
+        if (typeof this.timeoutID === "number") {
+            clearTimeout(this.timeoutID);
+            this.timeoutID = undefined;
+        }
         // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
         this.slideItems.forEach((element) => {
             // i.setAttribute("style", `transition: ${0}s; left: ${-offset}px`);
@@ -419,12 +421,12 @@ function changeCSS(theClass, element, value) {
 
     for (let S = 0; S < document.styleSheets.length; S++) {
         for (let R = 0; R < document.styleSheets[S][cssRules].length; R++) {
-            if (document.styleSheets[S][cssRules][R].selectorText === theClass) {
-                if (document.styleSheets[S][cssRules][R].style[element]) {
-                    document.styleSheets[S][cssRules][R].style[element] = value;
-                    added = true;
-                    break;
-                }
+            if (document.styleSheets[S][cssRules][R].selectorText === theClass &&
+                document.styleSheets[S][cssRules][R].style[element] === "") {
+                document.styleSheets[S][cssRules][R].style[element] = value;
+                added = true;
+                break;
+
             }
         }
 
@@ -452,12 +454,11 @@ function deleteCSS(theClass, element) {
 
     for (let S = 0; S < document.styleSheets.length; S++) {
         for (let R = 0; R < document.styleSheets[S][cssRules].length; R++) {
-            if (document.styleSheets[S][cssRules][R].selectorText === theClass) {
-                if (document.styleSheets[S][cssRules][R].style[element]) {
-                    document.styleSheets[S][cssRules][R].style[element] = "";
-                    deleted = true;
-                    break;
-                }
+            if (document.styleSheets[S][cssRules][R].selectorText === theClass &&
+                document.styleSheets[S][cssRules][R].style[element] !== "") {
+                document.styleSheets[S][cssRules][R].style[element] = "";
+                deleted = true;
+                break;
             }
         }
     }
