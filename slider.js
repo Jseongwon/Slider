@@ -137,17 +137,15 @@ class Slider {
      */
     async init() {
         // 원소들을 읽는다.
-        // 버튼 엘리먼트 선택하기
         this.prevButton = document.querySelector(".slider_prev_button");
         this.nextButton = document.querySelector(".slider_next_button");
 
-        // 슬라이드 전체를 선택해 값을 변경해주기 위해 슬라이드 전체 선택하기
+        // 슬라이드 전체를 선택해 값을 변경해주기 위해 슬라이드 전체 선택한다.
         this.slideItems = document.querySelectorAll(".slider_item");
 
         this.paginationItems = document.querySelectorAll(".slider_pagination > li");
 
-        // 오프셋 방향 구하기
-        // 슬라이크 전체 길이 구하기
+        // 오프셋 방향과 슬라이크 전체 길이를 구한다.
         this.offsetAttribute = 'left';
         this.sliderDistance = this.sliderElement.clientWidth;
         if (this.option.direction !== 'horizontal' && this.option.direction === 'vertical' ||
@@ -156,11 +154,8 @@ class Slider {
             this.sliderDistance = this.sliderElement.clientHeight;
         }
 
-        // 현재 슬라이드 위치가 슬라이드 개수를 넘기지 않게 하기 위한 변수
         this.maxSlide = this.slideItems.length;
-
-        // 버튼 클릭할 때 마다 현재 슬라이드가 어디인지 알려주기 위한 변수
-        this.currSlide = 1;
+        this.currentSlide = 0;
     }
 
     async render() {
@@ -169,32 +164,8 @@ class Slider {
         await this.init();
 
         // + 원소 랜더 기능은 좀 쓸데 없어보임
-        // ============================ 변경 예정 ============================
-        // 무한 슬라이드를 위해 start, end 슬라이드 복사하기 {1~5가 있으면 복제본 1 1~5 복제본 5로 만들고 복제본이면 다음페이지로 넘기는 형식으로 추정됨.}
-        const startSlide = this.slideItems[0];
-        const endSlide = this.slideItems[this.slideItems.length - 1];
-        const startElem = document.createElement("div");
-        const endElem = document.createElement("div");
-
-        endSlide.classList.forEach((c) => endElem.classList.add(c));
-        endElem.innerHTML = endSlide.innerHTML;
-
-        startSlide.classList.forEach((c) => startElem.classList.add(c));
-        startElem.innerHTML = startSlide.innerHTML;
-
-        // 각 복제한 엘리먼트 추가하기
-        this.slideItems[0].before(endElem);
-        this.slideItems[this.slideItems.length - 1].after(startElem);
-
-        // 슬라이드 전체를 선택해 값을 변경해주기 위해 슬라이드 전체 선택하기
-        this.slideItems = document.querySelectorAll(".slider_item");
-        //
-        this.offset = this.sliderDistance + this.currSlide;
+        this.offset = this.sliderDistance * this.currentSlide;
         this.changedOffset();
-        // ============================ /변경 예정 ============================
-
-        // 1. 버튼을 추가해야 되면
-        // ==
 
         // 방향에 따라 위치값을 정한다.
         // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
@@ -213,17 +184,12 @@ class Slider {
 
             // 4. 방향이 수평이거나 가로이면
             if (this.option.direction === "horizontal" || this.option.direction === "row") {
-                // 방향에 따라 위치값을 정한다.
-                // ======
-
                 // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
                 this.prevButton.innerHTML = "◀";
                 this.nextButton.innerHTML = "▶";
             }
             // 5. 방향이 수직이거나 세로이면
             else {
-                // 방향에 따라 위치값을 정한다.
-                // ======
                 // 왼쪽 위치, 오른쪽 위치를 구한다.
                 changeCSS('.slider_container', 'flex-wrap', 'wrap');
 
@@ -236,6 +202,13 @@ class Slider {
 
                 deleteCSS('.slider_button', 'top');
 
+                changeCSS('.slider_pagination', 'display', 'block');
+                changeCSS('.slider_pagination', 'right', '0%');
+                changeCSS('.slider_pagination', 'top', '50%');
+                changeCSS('.slider_pagination', 'transform', 'translateY(-50%)');
+
+                deleteCSS('.slider_pagination', 'left');
+
                 // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
                 this.prevButton.innerHTML = "▲";
                 this.nextButton.innerHTML = "▼";
@@ -243,13 +216,30 @@ class Slider {
         }
 
         // 2. 페이지네이션을 추가해야 되면
-        // ==
-        // 1. 페이지네이션을 만든다.
-        // 2. 만든 페이지네이션에 기본 클래스를 추가한다.
-        // 3. 슬라이더에 추가한다.
-        // 방향에 따라 수평이면 아래에, 수직이면 우측에 추가한다.
+        if (this.option.isPagination !== undefined || this.option.isPagination === true) {
+            // 1. 페이지네이션을 만든다.
+            this.pagination = document.createElement('ul');
 
-        // 2. 페이지네이션을 추가해야 되면
+            // 2. 만든 페이지네이션에 기본 클래스를 추가한다.
+            this.pagination.className = 'slider_pagination';
+
+            // 3. 페에지의 개수만큼 자식들을 추가한다.
+            this.paginationItems = [];
+            for(let i = 0; i < this.maxSlide; i++) {
+                this.paginationItems[i] = document.createElement('li');
+
+                if(i === 0) {
+                    this.paginationItems[i].className = 'active';
+                }
+
+                this.paginationItems[i].innerText = '•';
+
+                this.pagination.appendChild(this.paginationItems[i]);
+            }
+
+            // 3. 슬라이더에 추가한다.
+            this.sliderElement.appendChild(this.pagination);
+        }
 
         this.setEvent();
     }
@@ -279,109 +269,50 @@ class Slider {
         // 각 페이지네이션 클릭 시 해당 슬라이드로 이동하기
         for (let i = 0; i < this.maxSlide && this.paginationItems.length > 0; i++) {
             // 각 페이지네이션마다 클릭 이벤트 추가하기
-            this.paginationItems[i].addEventListener("click", () => { // 해당 이벤트는 onPaginationButtonClicked로 빼내기
-                // 클릭한 페이지네이션에 따라 현재 슬라이드 변경해주기(currSlide는 시작 위치가 1이기 때문에 + 1)
-                this.currSlide = i + 1;
-                // 슬라이드를 이동시키기 위한 offset 계산
-                this.offset = this.sliderDistance * this.currSlide;
-                // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
-                this.changedOffset();
-                // 슬라이드 이동 시 현재 활성화된 pagination 변경
-                this.paginationItems.forEach((i) => i.classList.remove("active"));
-                this.paginationItems[this.currSlide - 1].classList.add("active");
-            });
+            this.paginationItems[i].addEventListener("click", this.onPaginationItemClicked);
         }
 
+        this.sliderElement.addEventListener("mousedown", this.onSetPointing);
+        this.sliderElement.addEventListener("mouseup", this.onKillPointing);
 
-        // // PC 클릭 이벤트 (드래그) 해당 이벤트 SliderElement가 this가 된다 => this를 해당 Slider로 지정하거나 링크를 알고 있어야 한다.
-        // this.sliderElement.addEventListener("mousedown", (e) => {
-        //     this.startClickPoint = e.pageX; // 마우스 드래그 시작 위치 저장
-        // });
-        //
-        // this.sliderElement.addEventListener("mouseup", (e) => {
-        //     this.endClickPoint = e.pageX; // 마우스 드래그 끝 위치 저장
-        //     if (this.startClickPoint < this.endClickPoint) {
-        //         // 마우스가 오른쪽으로 드래그 된 경우
-        //         this.prevMove();
-        //     } else if (this.startClickPoint > this.endClickPoint) {
-        //         // 마우스가 왼쪽으로 드래그 된 경우
-        //         this.nextMove();
-        //     }
-        // });
-        //
-        // // 모바일 터치 이벤트 (스와이프) => 마찬가지로 Slider 가 this가 되어야 함.
-        // this.sliderElement.addEventListener("touchstart", (e) => {
-        //     this.startClickPoint = e.touches[0].pageX; // 터치가 시작되는 위치 저장
-        // });
-        // this.sliderElement.addEventListener("touchend", (e) => {
-        //     this.endClickPoint = e.changedTouches[0].pageX; // 터치가 끝나는 위치 저장
-        //     if (this.startClickPoint < this.endClickPoint) {
-        //         // 오른쪽으로 스와이프 된 경우
-        //         prevMove();
-        //     } else if (this.startClickPoint > this.endClickPoint) {
-        //         // 왼쪽으로 스와이프 된 경우
-        //         nextMove();
-        //     }
-        // });
+        this.sliderElement.addEventListener("touchstart", this.onSetPointing);
+        this.sliderElement.addEventListener("touchend", this.onKillPointing);
 
-        // on으로 메소드를 만들어서 접근이 가능하게 만드는 방법이 가장 이상적임.
-        // 슬라이드에 마우스가 올라간 경우 루프 멈추기
         this.sliderElement.addEventListener("mouseover", this.onAnimatedStopMove);
-
-        // 슬라이드에서 마우스가 나온 경우 루프 재시작하기
         this.sliderElement.addEventListener("mouseout", this.onAnimatedStartMove);
     }
 
     onNextMove = () => {
-        this.currSlide++;
-        // 마지막 슬라이드 이상으로 넘어가지 않게 하기 위해서
-        if (this.currSlide <= this.maxSlide) {
-            // 슬라이드를 이동시키기 위한 offset 계산
-            this.offset = this.sliderDistance * this.currSlide;
-            // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
-            this.changedOffset();
-        } else {
-            // 무한 슬라이드 기능 - currSlide 값만 변경해줘도 되지만 시각적으로 자연스럽게 하기 위해 아래 코드 작성
-            this.currSlide = 0;
-            this.offset = this.sliderDistance * this.currSlide;
-            this.changedOffset();
-
-            this.currSlide++;
-            this.offset = this.sliderDistance * this.currSlide;
-            // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
-            this.timeoutID = setTimeout(this.changedOffset, 0);
+        this.currentSlide++;
+        if(this.currentSlide >= this.maxSlide) {
+            this.currentSlide = 0;
         }
+        // offset을 계산한다.
+        this.offset = this.sliderDistance * this.currentSlide;
+        // offset을 변경한다.
+        this.changedOffset();
 
         // 슬라이드 이동 시 현재 활성화된 pagination 변경
         if (this.paginationItems.length > 0) {
             this.paginationItems.forEach((element) => element.classList.remove("active"));
-            this.paginationItems[this.currSlide - 1].classList.add("active");
+            this.paginationItems[this.currentSlide].classList.add("active");
         }
     }
     onPreviousMove = () => {
-        this.currSlide--;
-        // 1번째 슬라이드 이하로 넘어가지 않게 하기 위해서
-        if (this.currSlide > 0) {
-            // 슬라이드를 이동시키기 위한 offset 계산
-            this.offset = this.sliderDistance * this.currSlide;
-            // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
-            this.changedOffset();
-        } else {
-            // 무한 슬라이드 기능 - currSlide 값만 변경해줘도 되지만 시각적으로 자연스럽게 하기 위해 아래 코드 작성
-            this.currSlide = this.maxSlide + 1;
-            this.offset = this.sliderDistance * this.currSlide;
-            // 각 슬라이드 아이템의 left에 offset 적용
-            this.changedOffset();
-
-            this.currSlide--;
-            this.offset = this.sliderDistance * this.currSlide;
-            this.timeoutID = setTimeout(this.changedOffset, 0);
+        this.currentSlide--;
+        if(this.currentSlide < 0) {
+            this.currentSlide = this.maxSlide - 1;
         }
+
+        // offset을 계산한다.
+        this.offset = this.sliderDistance * this.currentSlide;
+        // offset을 변경한다.
+        this.changedOffset();
 
         // 슬라이드 이동 시 현재 활성화된 pagination 변경
         if (this.paginationItems.length > 0) {
             this.paginationItems.forEach((element) => element.classList.remove("active"));
-            this.paginationItems[this.currSlide - 1].classList.add("active");
+            this.paginationItems[this.currentSlide].classList.add("active");
         }
     }
 
@@ -396,17 +327,66 @@ class Slider {
         }, 3000);
     }
 
-    changedOffset = () => {
-        if (typeof this.timeoutID === "number") {
-            clearTimeout(this.timeoutID);
-            this.timeoutID = undefined;
+    // 시작 위치를 읽는다.
+    onSetPointing = (event) => {
+        this.startClickPoint = event.pageX;
+        if(event.touches !== undefined) this.startClickPoint = event.touches[0].pageX;
+
+        if(this.option.direction === 'horizontal' || this.option.direction === 'column') {
+            this.startClickPoint = event.pageY;
+            if(event.touches !== undefined) this.startClickPoint = event.touches[0].pageY;
         }
+    }
+
+    // 마지막 위치를 읽는다.
+    onKillPointing = (event) => {
+        this.endClickPoint = event.pageX;
+        if(event.touches !== undefined) this.endClickPoint = event.changedTouches[0].pageX;
+
+        if(this.option.direction === 'horizontal' || this.option.direction === 'column') {
+            this.endClickPoint = event.pageY;
+            if(event.touches !== undefined) this.endClickPoint = event.changedTouches[0].pageY;
+        }
+
+        if (this.startClickPoint < this.endClickPoint) {
+            this.onPreviousMove();
+        }
+        else if (this.startClickPoint > this.endClickPoint) {
+            this.onNextMove();
+        }
+    }
+
+    onPaginationItemClicked = (event) => {
+        let index;
+
+        this.paginationItems.forEach((element, i) => {
+            if(element === event.currentTarget) {
+                index = i;
+            }
+        });
+        if(index >= this.maxSlide) return;
+
+        this.currentSlide = index;
+
+        // offset을 계산한다.
+        this.offset = this.sliderDistance * this.currentSlide;
+        // offset으로 변경한다.
+        this.changedOffset();
+        // 슬라이드 이동 시 현재 활성화된 pagination 변경
+        this.paginationItems.forEach((element) => element.classList.remove("active"));
+        this.paginationItems[this.currentSlide].classList.add("active");
+    }
+
+    changedOffset = () => {
         // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
         this.slideItems.forEach((element) => {
             // i.setAttribute("style", `transition: ${0}s; left: ${-offset}px`);
             element.setAttribute("style", `transition: ${this.option.animation.millisecond}ms; ${this.offsetAttribute}: ${-this.offset}px`);
         })
     }
+
+    // 확장한다.
+
 }
 
 function changeCSS(theClass, element, value) {
@@ -426,7 +406,6 @@ function changeCSS(theClass, element, value) {
                 document.styleSheets[S][cssRules][R].style[element] = value;
                 added = true;
                 break;
-
             }
         }
 
@@ -435,7 +414,8 @@ function changeCSS(theClass, element, value) {
                 document.styleSheets[S].insertRule(theClass + '{' + element + ': ' + value + ';}',
                     document.styleSheets[S][cssRules].length
                 );
-            } else if (document.styleSheets[S].addRule) {
+            }
+            else if (document.styleSheets[S].addRule) {
                 document.styleSheets[S].addRule(theClass, element + ':' + value + ';');
             }
         }

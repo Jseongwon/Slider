@@ -110,7 +110,7 @@ li {
 
     /* position */
     position: absolute;
-    bottom: 0;
+    bottom: 0px;
     /* left:50%, translateX(-50%)를 하면 가로 가운데로 위치시킬 수 있다. */
     left: 50%;
     transform: translateX(-50%);
