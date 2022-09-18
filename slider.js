@@ -121,20 +121,6 @@ class Slider {
         this.option = option;
     }
 
-    /*
-    이벤트 설정
-    버튼 클릭과 리사이즈
-    드래그
-
-    자동 넘기기
-    애니메이션의 넘기기 방향도 지정
-    Prev, Next로
-
-    넘기기
-    Prev, Next
-
-    애니메이션 루프
-     */
     async init() {
         // 원소들을 읽는다.
         this.prevButton = document.querySelector(".slider_prev_button");
@@ -159,8 +145,6 @@ class Slider {
     }
 
     async render() {
-        let pagination;
-
         await this.init();
 
         // + 원소 랜더 기능은 좀 쓸데 없어보임
