@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Slider</title>
+    <link rel="stylesheet" href="./slider.css"/>
+</head>
+<body>
+<div class="slider slider_wrap">
+    <div class="slider_container">
+        <div class="slider_item item1">1</div>
+        <div class="slider_item item2">2</div>
+        <div class="slider_item item3">3</div>
+        <div class="slider_item item4">4</div>
+        <div class="slider_item item5">5</div>
+    </div>
+</div>
+
+<script src="./slider.js"></script>
+<script type="module">
+    var slider = new Slider(document.querySelector('.slider'), {direction: "row", isButton: true});
+    slider.render();
+</script>
+</body>
+</html>
