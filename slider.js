@@ -122,7 +122,7 @@ class Slider {
         this.option = option;
     }
 
-    async init() {
+    init() {
         // 원소들을 읽는다.
         this.prevButton = document.querySelector(".slider_prev_button");
         this.nextButton = document.querySelector(".slider_next_button");
@@ -164,8 +164,8 @@ class Slider {
         this.currentSlide = 0;
     }
 
-    async render() {
-        await this.init();
+    render() {
+        this.init();
 
         // + 원소 랜더 기능은 좀 쓸데 없어보임
         this.offset = this.sliderDistance * this.currentSlide;
