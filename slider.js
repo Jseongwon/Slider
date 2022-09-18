@@ -27,6 +27,7 @@ class Slider {
         isButton: false OR true,
         isPagination: false OR true,
         isDragged => false OR true,
+        isExpand => false OR true,
         customEvent: [
             {eventType: "click", function: ~~~}, . . .
         ]
@@ -138,6 +139,25 @@ class Slider {
             this.option.direction !== 'row' && this.option.direction === 'column') {
             this.offsetAttribute = 'top';
             this.sliderDistance = this.sliderElement.clientHeight;
+
+            // 속성 값들을 변경한다.
+            changeCSS('.slider_container', 'flex-wrap', 'wrap');
+
+            changeCSS('.slider_item', 'transition', `${this.offsetAttribute} 400ms`);
+
+            changeCSS('.slider_prev_button', 'top', '10px');
+            changeCSS('.slider_prev_button', 'left', 'calc(50% - 16px)');
+            changeCSS('.slider_next_button', 'bottom', '10px');
+            changeCSS('.slider_next_button', 'left', 'calc(50% - 16px)');
+
+            deleteCSS('.slider_button', 'top');
+
+            changeCSS('.slider_pagination', 'display', 'block');
+            changeCSS('.slider_pagination', 'right', '0%');
+            changeCSS('.slider_pagination', 'top', '50%');
+            changeCSS('.slider_pagination', 'transform', 'translateY(-50%)');
+
+            deleteCSS('.slider_pagination', 'left');
         }
 
         this.maxSlide = this.slideItems.length;
@@ -174,25 +194,6 @@ class Slider {
             }
             // 5. 방향이 수직이거나 세로이면
             else {
-                // 왼쪽 위치, 오른쪽 위치를 구한다.
-                changeCSS('.slider_container', 'flex-wrap', 'wrap');
-
-                changeCSS('.slider_item', 'transition', `${this.offsetAttribute} 400ms`);
-
-                changeCSS('.slider_prev_button', 'top', '10px');
-                changeCSS('.slider_prev_button', 'left', 'calc(50% - 16px)');
-                changeCSS('.slider_next_button', 'bottom', '10px');
-                changeCSS('.slider_next_button', 'left', 'calc(50% - 16px)');
-
-                deleteCSS('.slider_button', 'top');
-
-                changeCSS('.slider_pagination', 'display', 'block');
-                changeCSS('.slider_pagination', 'right', '0%');
-                changeCSS('.slider_pagination', 'top', '50%');
-                changeCSS('.slider_pagination', 'transform', 'translateY(-50%)');
-
-                deleteCSS('.slider_pagination', 'left');
-
                 // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
                 this.prevButton.innerHTML = "▲";
                 this.nextButton.innerHTML = "▼";
@@ -262,8 +263,8 @@ class Slider {
         this.sliderElement.addEventListener("touchstart", this.onSetPointing);
         this.sliderElement.addEventListener("touchend", this.onKillPointing);
 
-        this.sliderElement.addEventListener("mouseover", this.onAnimatedStopMove);
-        this.sliderElement.addEventListener("mouseout", this.onAnimatedStartMove);
+        this.sliderElement.addEventListener("mouseover", this.onMouseOver);
+        this.sliderElement.addEventListener("mouseout", this.onMouseOut);
     }
 
     onNextMove = () => {
@@ -300,12 +301,36 @@ class Slider {
         }
     }
 
-    onAnimatedStopMove = (event) => {
+    // 오버일 때
+    onMouseOver = (event) => {
+        // 1. 애니메이션을 종료한다.
         clearInterval(this.loopInterval);
         this.loopInterval = undefined;
+
+        // 2. expand 속성이 있으면
+        if(this.option.isExpand !== undefined && this.option.isExpand === true) {
+            // 2.1. overflow 속성을 변경한다.
+            changeCSS('.slider_container', 'overflow', 'visible');
+
+            // 2.2. 오프셋의 위치를 변경한다.
+            this.offset = 0;
+            this.changedOffset();
+        }
     }
 
-    onAnimatedStartMove = (event) => {
+    // 오버가 아닐 때
+    onMouseOut = (event) => {
+        // 1. expand 속성이 있으면
+        if(this.option.isExpand !== undefined && this.option.isExpand === true) {
+            // 1.1. overflow 속성을 변경한다.
+            changeCSS('.slider_container', 'overflow', 'hidden');
+
+            // 1.2. 오프셋의 위치를 변경한다.
+            this.offset = this.sliderDistance * this.currentSlide;
+            this.changedOffset();
+        }
+
+        // 2. 애니메이션을 추가한다.
         this.loopInterval = setInterval(() => {
             this.onNextMove();
         }, 3000);
