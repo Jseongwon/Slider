@@ -3,20 +3,6 @@
 class Slider {
     static instance = null;
     /*
-    baseObject Format
-    baseObject = {
-        data: [
-            {
-
-            },
-            {
-
-            }, . . .
-        ]
-    }
-     */
-
-    /*
     optionObject Format
     option = {
         animation : {
@@ -37,8 +23,8 @@ class Slider {
         if (Slider.instance !== null) {
             return Slider.instance;
         }
-        // 타깃 엘리먼트가 없으면
-        this.sliderElement = targetElement;
+        // 타깃 엘리먼트sliderElem가 없으면
+        this.slider = targetElement;
 
         // 옵션이 없으면 기본값 설정해주기
         this.option = option;
@@ -66,13 +52,13 @@ class Slider {
     // Insert
     add(element) {
         let index;
-        index = this.sliderElement.appendChild(element);
+        index = this.slider.appendChild(element);
         return index;
     }
 
     // Delete
     delete(nodeIndex) {
-        this.sliderElement.removeChild(nodeIndex);
+        this.slider.removeChild(nodeIndex);
         return -1;
     }
 
@@ -80,7 +66,7 @@ class Slider {
         let ret = null;
         let childNodes;
 
-        childNodes = this.sliderElement.childNodes;
+        childNodes = this.slider.childNodes;
 
         childNodes.forEach((element, i) => {
             if (this.hasClass(element, className)) {
@@ -95,7 +81,7 @@ class Slider {
         let ret = null;
         let childNodes;
 
-        childNodes = this.sliderElement.childNodes;
+        childNodes = this.slider.childNodes;
 
         childNodes.forEach((element, i) => {
             if (i === index) {
@@ -107,7 +93,7 @@ class Slider {
     }
 
     getLsit() {
-        return this.sliderElement.childNodes;
+        return this.slider.childNodes;
     }
 
     hasClass(element, className) {
@@ -124,41 +110,36 @@ class Slider {
 
     init() {
         // 원소들을 읽는다.
+        this.sliderContainer = document.querySelector(".slider_container");
+
+        this.slideItems = document.querySelectorAll(".slider_item");
+
         this.prevButton = document.querySelector(".slider_prev_button");
         this.nextButton = document.querySelector(".slider_next_button");
-
-        // 슬라이드 전체를 선택해 값을 변경해주기 위해 슬라이드 전체 선택한다.
-        this.slideItems = document.querySelectorAll(".slider_item");
 
         this.paginationItems = document.querySelectorAll(".slider_pagination > li");
 
         // 오프셋 방향과 슬라이크 전체 길이를 구한다.
-        this.offsetAttribute = 'left';
-        this.sliderDistance = this.sliderElement.clientWidth;
-        if (this.option.direction !== 'horizontal' && this.option.direction === 'vertical' ||
-            this.option.direction !== 'row' && this.option.direction === 'column') {
-            this.offsetAttribute = 'top';
-            this.sliderDistance = this.sliderElement.clientHeight;
+        // 속성도 정한다.
+        this.sliderContainer.style.overflow = 'hidden';
+        if(this.option.direction === "horizontal" || this.option.direction === "row") {
+            this.offsetAttribute = 'left';
+            this.sliderDistance = this.slider.clientWidth;
 
             // 속성 값들을 변경한다.
-            changeCSS('.slider_container', 'flex-wrap', 'wrap');
-
-            changeCSS('.slider_item', 'transition', `${this.offsetAttribute} 400ms`);
-
-            changeCSS('.slider_prev_button', 'top', '10px');
-            changeCSS('.slider_prev_button', 'left', 'calc(50% - 16px)');
-            changeCSS('.slider_next_button', 'bottom', '10px');
-            changeCSS('.slider_next_button', 'left', 'calc(50% - 16px)');
-
-            deleteCSS('.slider_button', 'top');
-
-            changeCSS('.slider_pagination', 'display', 'block');
-            changeCSS('.slider_pagination', 'right', '0%');
-            changeCSS('.slider_pagination', 'top', '50%');
-            changeCSS('.slider_pagination', 'transform', 'translateY(-50%)');
-
-            deleteCSS('.slider_pagination', 'left');
+            this.sliderContainer.style.flexWrap = 'nowrap';
         }
+        else if (this.option.direction === "vertical" || this.option.direction === "column") {
+            this.offsetAttribute = 'top';
+            this.sliderDistance = this.slider.clientHeight;
+
+            // 속성 값들을 변경한다.
+            this.sliderContainer.style.flexWrap = 'wrap';
+        }
+
+        this.slideItems.forEach((element) => {
+            element.style.transition = `${this.offsetAttribute} ${this.option.animation.millisecond}ms`;
+        })
 
         this.maxSlide = this.slideItems.length;
         this.currentSlide = 0;
@@ -183,20 +164,32 @@ class Slider {
             this.nextButton.className = 'slider_next_button slider_button';
 
             // 3. 슬라이더에 추가한다.
-            this.sliderElement.appendChild(this.prevButton);
-            this.sliderElement.appendChild(this.nextButton);
+            this.slider.appendChild(this.prevButton);
+            this.slider.appendChild(this.nextButton);
 
             // 4. 방향이 수평이거나 가로이면
             if (this.option.direction === "horizontal" || this.option.direction === "row") {
                 // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
                 this.prevButton.innerHTML = "◀";
                 this.nextButton.innerHTML = "▶";
+
+                this.prevButton.style.top = 'calc(50% - 16px)';
+                this.nextButton.style.top = 'calc(50% - 16px)';
+
+                this.prevButton.style.left = '10px';
+                this.nextButton.style.right = '10px';
             }
             // 5. 방향이 수직이거나 세로이면
             else {
                 // 방향에 따라 이전과 다음 버튼에 특수기호를 넣는다.
                 this.prevButton.innerHTML = "▲";
                 this.nextButton.innerHTML = "▼";
+
+                this.prevButton.style.left = 'calc(50% - 16px)';
+                this.nextButton.style.left = 'calc(50% - 16px)';
+
+                this.prevButton.style.top = '10px';
+                this.nextButton.style.bottom = '10px';
             }
         }
 
@@ -223,7 +216,19 @@ class Slider {
             }
 
             // 3. 슬라이더에 추가한다.
-            this.sliderElement.appendChild(this.pagination);
+            this.slider.appendChild(this.pagination);
+
+            if (this.option.direction === "horizontal" || this.option.direction === "row") {
+                this.pagination.style.display = 'flex';
+                this.pagination.style.left = '50%';
+                this.pagination.style.transform = 'translateX(-50%)';
+            }
+            else {
+                this.pagination.style.display = 'block';
+                this.pagination.style.top = '50%';
+                this.pagination.style.right = '0%';
+                this.pagination.style.transform = 'translateY(-50%)';
+            }
         }
 
         this.setEvent();
@@ -240,8 +245,8 @@ class Slider {
         }, 3000);
 
         // 슬라이더 원소의 크기가 변경되면
-        this.sliderElement.addEventListener("resize", () => {
-            this.sliderDistance = this.sliderElement.clientWidth;
+        this.slider.addEventListener("resize", () => {
+            this.sliderDistance = this.slider.clientWidth;
         });
 
         // 버튼들에 클릭 이벤트를 추가한다.
@@ -257,14 +262,14 @@ class Slider {
             this.paginationItems[i].addEventListener("click", this.onPaginationItemClicked);
         }
 
-        this.sliderElement.addEventListener("mousedown", this.onSetPointing);
-        this.sliderElement.addEventListener("mouseup", this.onKillPointing);
+        this.slider.addEventListener("mousedown", this.onSetPointing);
+        this.slider.addEventListener("mouseup", this.onKillPointing);
 
-        this.sliderElement.addEventListener("touchstart", this.onSetPointing);
-        this.sliderElement.addEventListener("touchend", this.onKillPointing);
+        this.slider.addEventListener("touchstart", this.onSetPointing);
+        this.slider.addEventListener("touchend", this.onKillPointing);
 
-        this.sliderElement.addEventListener("mouseover", this.onMouseOver);
-        this.sliderElement.addEventListener("mouseout", this.onMouseOut);
+        this.slider.addEventListener("mouseover", this.onMouseOver);
+        this.slider.addEventListener("mouseout", this.onMouseOut);
     }
 
     onNextMove = () => {
@@ -310,7 +315,7 @@ class Slider {
         // 2. expand 속성이 있으면
         if(this.option.isExpand !== undefined && this.option.isExpand === true) {
             // 2.1. overflow 속성을 변경한다.
-            changeCSS('.slider_container', 'overflow', 'visible');
+            this.sliderContainer.style.overflow = 'visible';
 
             // 2.2. 오프셋의 위치를 변경한다.
             this.offset = 0;
@@ -323,7 +328,7 @@ class Slider {
         // 1. expand 속성이 있으면
         if(this.option.isExpand !== undefined && this.option.isExpand === true) {
             // 1.1. overflow 속성을 변경한다.
-            changeCSS('.slider_container', 'overflow', 'hidden');
+            this.sliderContainer.style.overflow = 'hidden';
 
             // 1.2. 오프셋의 위치를 변경한다.
             this.offset = this.sliderDistance * this.currentSlide;
@@ -396,61 +401,6 @@ class Slider {
 
     // 확장한다.
 
-}
-
-function changeCSS(theClass, element, value) {
-    let cssRules;
-    let added = false;
-
-    if (document.all) {
-        cssRules = 'rules';
-    } else if (document.getElementById) {
-        cssRules = 'cssRules';
-    }
-
-    for (let S = 0; S < document.styleSheets.length; S++) {
-        for (let R = 0; R < document.styleSheets[S][cssRules].length; R++) {
-            if (document.styleSheets[S][cssRules][R].selectorText === theClass &&
-                document.styleSheets[S][cssRules][R].style[element] === "") {
-                document.styleSheets[S][cssRules][R].style[element] = value;
-                added = true;
-                break;
-            }
-        }
-
-        if (!added) {
-            if (document.styleSheets[S].insertRule) {
-                document.styleSheets[S].insertRule(theClass + '{' + element + ': ' + value + ';}',
-                    document.styleSheets[S][cssRules].length
-                );
-            }
-            else if (document.styleSheets[S].addRule) {
-                document.styleSheets[S].addRule(theClass, element + ':' + value + ';');
-            }
-        }
-    }
-}
-
-function deleteCSS(theClass, element) {
-    let cssRules;
-    let deleted = false;
-
-    if (document.all) {
-        cssRules = 'rules';
-    } else if (document.getElementById) {
-        cssRules = 'cssRules';
-    }
-
-    for (let S = 0; S < document.styleSheets.length; S++) {
-        for (let R = 0; R < document.styleSheets[S][cssRules].length; R++) {
-            if (document.styleSheets[S][cssRules][R].selectorText === theClass &&
-                document.styleSheets[S][cssRules][R].style[element] !== "") {
-                document.styleSheets[S][cssRules][R].style[element] = "";
-                deleted = true;
-                break;
-            }
-        }
-    }
 }
 
 /*
