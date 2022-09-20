@@ -228,6 +228,7 @@ class Slider {
     }
 
     setEvent() {
+        let isMobile = /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
         // 드래그(스와이프) 이벤트를 위한 변수 초기화
         this.startClickPoint = 0;
         this.endClickPoint = 0;
@@ -255,11 +256,11 @@ class Slider {
             this.paginationItems[i].addEventListener("click", this.onPaginationItemClicked);
         }
 
-        this.slider.addEventListener("mousedown", this.onSetPointing);
-        this.slider.addEventListener("mouseup", this.onKillPointing);
+        if(isMobile !== true) this.slider.addEventListener("mousedown", this.onSetPointing);
+        if(isMobile !== true) this.slider.addEventListener("mouseup", this.onKillPointing);
 
-        this.slider.addEventListener("touchstart", this.onSetPointing);
-        this.slider.addEventListener("touchend", this.onKillPointing);
+        if(isMobile === true) this.slider.addEventListener("touchstart", this.onSetPointing);
+        if(isMobile === true) this.slider.addEventListener("touchend", this.onKillPointing);
 
         this.slider.addEventListener("mouseover", this.onMouseOver);
         this.slider.addEventListener("mouseout", this.onMouseOut);
