@@ -110,18 +110,20 @@ class Slider {
 
     init() {
         // 원소들을 읽는다.
-        this.sliderContainer = document.querySelector(".slider_container");
+        this.sliderContainer = this.slider.querySelector(".slider_container");
 
-        this.slideItems = document.querySelectorAll(".slider_item");
+        this.slideItems = this.slider.querySelectorAll(".slider_item");
 
-        this.prevButton = document.querySelector(".slider_prev_button");
-        this.nextButton = document.querySelector(".slider_next_button");
+        this.prevButton = this.slider.querySelector(".slider_prev_button");
+        this.nextButton = this.slider.querySelector(".slider_next_button");
 
-        this.paginationItems = document.querySelectorAll(".slider_pagination > li");
+        this.paginationItems = this.slider.querySelectorAll(".slider_pagination > li");
 
         // 오프셋 방향과 슬라이크 전체 길이를 구한다.
         // 속성도 정한다.
-        this.sliderContainer.style.overflow = 'hidden';
+        this.maxSlide = this.slideItems.length;
+        this.currentSlide = 0;
+
         if(this.option.direction === "horizontal" || this.option.direction === "row") {
             this.offsetAttribute = 'left';
             this.sliderDistance = this.slider.clientWidth;
@@ -140,9 +142,6 @@ class Slider {
         this.slideItems.forEach((element) => {
             element.style.transition = `${this.offsetAttribute} ${this.option.animation.millisecond}ms`;
         })
-
-        this.maxSlide = this.slideItems.length;
-        this.currentSlide = 0;
     }
 
     render() {
@@ -192,8 +191,13 @@ class Slider {
                 this.nextButton.style.bottom = '10px';
             }
         }
+        // 2. 확장을 추가해야 되면
+        if(this.option.isExpand !== undefined || this.option.isExpand === true) {
+            // slider_container_hoverable
+            this.sliderContainer.classList.add('slider_container_hoverable');
+        }
 
-        // 2. 페이지네이션을 추가해야 되면
+        // 3. 페이지네이션을 추가해야 되면
         if (this.option.isPagination !== undefined || this.option.isPagination === true) {
             // 1. 페이지네이션을 만든다.
             this.pagination = document.createElement('ul');
@@ -315,7 +319,9 @@ class Slider {
         // 2. expand 속성이 있으면
         if(this.option.isExpand !== undefined && this.option.isExpand === true) {
             // 2.1. overflow 속성을 변경한다.
-            this.sliderContainer.style.overflow = 'visible';
+            // this.slider.style.maxHeight = `${this.sliderDistance * this.maxSlide}px`;
+            // this.sliderContainer.style.overflow = 'visible'
+            // this.sliderContainer.style.visibility = 'visible';
 
             // 2.2. 오프셋의 위치를 변경한다.
             this.offset = 0;
@@ -328,7 +334,9 @@ class Slider {
         // 1. expand 속성이 있으면
         if(this.option.isExpand !== undefined && this.option.isExpand === true) {
             // 1.1. overflow 속성을 변경한다.
-            this.sliderContainer.style.overflow = 'hidden';
+            // this.slider.style.maxHeight = `${this.sliderDistance}px`;
+            // this.sliderContainer.style.overflow = 'hidden'
+            // this.sliderContainer.style.visibility = 'hidden';
 
             // 1.2. 오프셋의 위치를 변경한다.
             this.offset = this.sliderDistance * this.currentSlide;
@@ -336,6 +344,10 @@ class Slider {
         }
 
         // 2. 애니메이션을 추가한다.
+        if(this.loopInterval !== undefined) {
+            clearInterval(this.loopInterval);
+            this.loopInterval = undefined;
+        }
         this.loopInterval = setInterval(() => {
             this.onNextMove();
         }, 3000);
@@ -394,13 +406,9 @@ class Slider {
     changedOffset = () => {
         // 각 슬라이드 아이템의 offsetAttribute에 offset 적용
         this.slideItems.forEach((element) => {
-            // i.setAttribute("style", `transition: ${0}s; left: ${-offset}px`);
-            element.setAttribute("style", `transition: ${this.option.animation.millisecond}ms; ${this.offsetAttribute}: ${-this.offset}px`);
-        })
+            element.setAttribute("style", `transition: ${this.offsetAttribute} ${this.option.animation.millisecond}ms; ${this.offsetAttribute}: ${-this.offset}px`);
+        });
     }
-
-    // 확장한다.
-
 }
 
 /*
