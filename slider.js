@@ -1,7 +1,6 @@
 'use strict'
 
 class Slider {
-    static instance = null;
     /*
     optionObject Format
     option = {
@@ -20,9 +19,6 @@ class Slider {
     }
      */
     constructor(targetElement, option = {}) {
-        if (Slider.instance !== null) {
-            return Slider.instance;
-        }
         // 타깃 엘리먼트sliderElem가 없으면
         this.slider = targetElement;
 
@@ -39,13 +35,6 @@ class Slider {
         }
 
         Slider.instance = this;
-    }
-
-    static getInstance(targetElement, option) {
-        if (Slider.instance === null) {
-            Slider.instance = new Slider(targetElement, option);
-        }
-        return Slider.instance;
     }
 
     // Update
